@@ -41,8 +41,16 @@ static NSManagedObjectContext *managedObjectContext()
         path = [path stringByDeletingPathExtension];
         NSURL *url = [NSURL fileURLWithPath:[path stringByAppendingPathExtension:@"sqlite"]];
         
+        // Tutorial: http://www.raywenderlich.com/12170/core-data-tutorial-how-to-preloadimport-existing-data-updated
+        // as suggested in the comments of the tutorial, the console application is not actually writing anything to the sqlite database.
+        // This is why there aren't any new records in the iPhone simulator after following the second half of this tutorial.
+        // The problem is that Apple has changed the default journal mode to WAL for iOS7 and XCode 5.
+        // One solution is to disable the journal mode in the console application so that the records will be written to the .sqlite file immediately.
+        // this can be achieved through these options:
+        NSDictionary *options = @{ NSSQLitePragmasOption : @{@"journal_mode" : @"DELETE"} };
         NSError *error;
-        NSPersistentStore *newStore = [coordinator addPersistentStoreWithType:STORE_TYPE configuration:nil URL:url options:nil error:&error];
+
+        NSPersistentStore *newStore = [coordinator addPersistentStoreWithType:STORE_TYPE configuration:nil URL:url options:options error:&error];
         
         if (newStore == nil) {
             NSLog(@"Store Configuration Failure %@", ([error localizedDescription] != nil) ? [error localizedDescription] : @"Unknown Error");
